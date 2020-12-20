@@ -44,10 +44,11 @@ async function pullData() {
   const levels = out.data.levels.data;
   const firstHalf = levels.slice(0, levels.length / 2);
   const secondHalf = levels.slice(levels.length / 2);
+  const lastHalfUpdated = await DL_ILS.get('lastHalfUpdated');
+  const updateFirstHalf = lastHalfUpdated === 'second'; 
 
-  const cacheIsOld = data && new Date(data.lastUpdated).getDate() - new Date().getDate() > 0;
-  const halfToUpdate = cacheIsOld ? firstHalf : secondHalf;
-  const halfToMerge = cacheIsOld ? secondHalf : firstHalf;
+  const halfToUpdate = updateFirstHalf ? firstHalf : secondHalf;
+  const halfToMerge = updateFirstHalf ? secondHalf : firstHalf;
   for (const level of halfToUpdate) {
     const levelName = level.name;
     const leaderboardLink = level.links[6].uri;
@@ -71,10 +72,11 @@ async function pullData() {
   const mergingLevelNames = halfToMerge.map((level) => level.name);
   const mergingRuns = data ? data.runs.filter((run) => mergingLevelNames.includes(run.level)) : [];
   runs = [...runs, ...mergingRuns];
-  DL_ILS.put('data', JSON.stringify({ runs, lastUpdated: !data || cacheIsOld ? new Date().toISOString() : data.lastUpdated }));
+  DL_ILS.put('data', JSON.stringify({ runs, lastUpdated: new Date().toISOString() }));
+  DL_ILS.put('lastHalfUpdated', updateFirstHalf ? 'first' : 'second');
 }
 
-addEventListener("scheduled", event => {
+addEventListener('scheduled', event => {
   event.waitUntil(handleScheduled(event));
 })
 
