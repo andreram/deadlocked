@@ -72,8 +72,8 @@ async function pullData() {
   const mergingLevelNames = halfToMerge.map((level) => level.name);
   const mergingRuns = data ? data.runs.filter((run) => mergingLevelNames.includes(run.level)) : [];
   runs = [...runs, ...mergingRuns];
-  DL_ILS.put('data', JSON.stringify({ runs, lastUpdated: new Date().toISOString() }));
-  DL_ILS.put('lastHalfUpdated', updateFirstHalf ? 'first' : 'second');
+  await DL_ILS.put('data', JSON.stringify({ runs, lastUpdated: new Date().toISOString() }));
+  await DL_ILS.put('lastHalfUpdated', updateFirstHalf ? 'first' : 'second');
 }
 
 addEventListener('scheduled', event => {
